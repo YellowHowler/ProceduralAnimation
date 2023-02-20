@@ -24,7 +24,7 @@ public class MoveBody : MonoBehaviour
     private Transform castPos;
 
     private float armLength;
-    private float offsetAmount = 0.8f;
+    private float offsetAmount = 1f;
 
     private Vector3 armTargetPos;
     private Vector3 arm1FinalTargetPos;

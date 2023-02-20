@@ -95,11 +95,11 @@ public class ArmKinematics : MonoBehaviour
     private IEnumerator ChangeTargetCor(Vector3 oldPos, Vector3 newPos, Transform body)
     {
         body.gameObject.GetComponent<MoveBody>().isMoving = true;
-        WaitForSeconds sec = new WaitForSeconds(0.006f);
+        WaitForSeconds sec = new WaitForSeconds(0.01f);
         //mid = body.gameObject.GetComponent<MoveBody>().dir * Vector3.Cross((newPos-oldPos).normalized, (root.position - body.position))*3.5f + newPos;
         mid = body.up*1f + (newPos + oldPos)/2;
 
-        body.gameObject.GetComponent<MoveBody>().speed = 6f;
+        //body.gameObject.GetComponent<MoveBody>().speed = 6f;
         print(body.gameObject.GetComponent<MoveBody>().speed);
 
         for(float i = 0; i < 1; i+= 0.05f)
@@ -110,7 +110,7 @@ public class ArmKinematics : MonoBehaviour
 
         body.gameObject.GetComponent<MoveBody>().isMoving = false;
 
-        body.gameObject.GetComponent<MoveBody>().speed = 8f;
+        //body.gameObject.GetComponent<MoveBody>().speed = 8f;
 
         // while(Vector3.Distance(Target.position, newPos) > 0.01f)
         // {
