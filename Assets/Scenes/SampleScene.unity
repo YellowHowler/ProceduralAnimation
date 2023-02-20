@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.44657874, g: 0.49641275, b: 0.5748172, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657826, g: 0.49641263, b: 0.57481676, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -342,6 +342,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ChainLength: 2
   Target: {fileID: 1592588120}
+  root: {fileID: 1708887134}
   Pole: {fileID: 317072523}
   CompleteLength: 0
   Iterations: 10
@@ -1493,13 +1494,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
-  m_LocalRotation: {x: 0.13621339, y: 0.70027393, z: -0.12125424, w: 0.6901883}
-  m_LocalPosition: {x: -8.07, y: 3.77, z: 0.14}
+  m_LocalRotation: {x: -0.17373867, y: 0.6728466, z: -0.16714326, w: -0.6993966}
+  m_LocalPosition: {x: 5.3200006, y: 3.0300002, z: -1}
   m_LocalScale: {x: 1.1835407, y: 1.2884556, z: 0.74975926}
   m_Children: []
   m_Father: {fileID: 671067657}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 20.968, y: 91.097, z: 1.436}
+  m_LocalEulerAnglesHint: {x: 27.901, y: 272.217, z: 0}
 --- !u!1 &1144013881
 GameObject:
   m_ObjectHideFlags: 0
@@ -1510,7 +1511,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1144013882}
   m_Layer: 0
-  m_Name: Arm1Cast
+  m_Name: ArmCast
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1578,6 +1579,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ChainLength: 2
   Target: {fileID: 778013127}
+  root: {fileID: 458116635}
   Pole: {fileID: 1754085345}
   CompleteLength: 0
   Iterations: 10
@@ -2178,6 +2180,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ChainLength: 2
   Target: {fileID: 8633995}
+  root: {fileID: 730866935}
   Pole: {fileID: 2069129822}
   CompleteLength: 0
   Iterations: 10
@@ -2460,6 +2463,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ChainLength: 2
   Target: {fileID: 707167097}
+  root: {fileID: 1905937804}
   Pole: {fileID: 584888680}
   CompleteLength: 0
   Iterations: 10

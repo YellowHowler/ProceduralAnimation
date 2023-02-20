@@ -6,6 +6,7 @@ public class ArmKinematics : MonoBehaviour
 {
     [SerializeField] private int ChainLength = 2;
     [SerializeField] public Transform Target;
+    [SerializeField] private Transform root;
 
     protected Quaternion TargetInitialRotation;
     protected Quaternion EndInitialRotation;
@@ -93,13 +94,14 @@ public class ArmKinematics : MonoBehaviour
 
     private IEnumerator ChangeTargetCor(Vector3 oldPos, Vector3 newPos, Transform body)
     {
-        WaitForSeconds sec = new WaitForSeconds(0.04f);
-        mid = body.gameObject.GetComponent<MoveBody>().dir * Vector3.Cross((newPos-oldPos).normalized, (Bones[0].position - body.position))*2.5f + newPos;
+        WaitForSeconds sec = new WaitForSeconds(0.015f);
+        //mid = body.gameObject.GetComponent<MoveBody>().dir * Vector3.Cross((newPos-oldPos).normalized, (root.position - body.position))*3.5f + newPos;
+        mid = body.up*1f + (newPos + oldPos)/2;
 
         //body.gameObject.GetComponent<MoveBody>().speed = 0.2f;
         print(body.gameObject.GetComponent<MoveBody>().speed);
 
-        for(float i = 0; i < 1; i+= 0.1f)
+        for(float i = 0; i < 1; i+= 0.05f)
         {
             Target.position = (1-i) * ((1-i)*oldPos + i*mid) + i*((1-i)*mid + i*newPos);
             yield return sec;

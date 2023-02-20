@@ -45,7 +45,7 @@ public class MoveBody : MonoBehaviour
         arm1Length = arm1LeafPos.gameObject.GetComponent<ArmKinematics>().CompleteLength;
 
         if(Physics.Raycast(origin: armCastPos.position,
-                                direction: (-transform.up + rb.velocity*0.7f),
+                                direction: (-transform.up + rb.velocity*0.9f),
                                 hitInfo: out hit,
                                 maxDistance: Mathf.Infinity,
                                 layerMask: IgnoreLayers.value))
@@ -57,7 +57,7 @@ public class MoveBody : MonoBehaviour
             targetPos[0] = hit.point;
         }
         if(Physics.Raycast(origin: legCastPos.position,
-                                direction: (-transform.up + rb.velocity*0.7f),
+                                direction: (-transform.up + rb.velocity*0.9f),
                                 hitInfo: out hit,
                                 maxDistance: Mathf.Infinity,
                                 layerMask: IgnoreLayers.value))
@@ -97,12 +97,12 @@ public class MoveBody : MonoBehaviour
         if(!isMoving)
         {
             if(Physics.Raycast(origin: castPos.position,
-                                direction: (-transform.up + rb.velocity*0.7f),
+                                direction: (-transform.up + rb.velocity*0.9f),
                                 hitInfo: out hit,
                                 maxDistance: Mathf.Infinity,
                                 layerMask: IgnoreLayers.value))
             {
-                Debug.DrawRay(castPos.position,(-transform.up + rb.velocity*0.7f), Color.green, 0.05f, true);
+                Debug.DrawRay(castPos.position,(-transform.up + rb.velocity*0.9f), Color.green, 0.05f, true);
                 test.position = hit.point;
                 arm1TargetPos = hit.point;
             }
@@ -151,12 +151,12 @@ public class MoveBody : MonoBehaviour
         yield return sec;
 
         if(Physics.Raycast(origin: castPos.position,
-                                direction: (-transform.up + rb.velocity*0.7f),
+                                direction: (-transform.up + rb.velocity*0.9f),
                                 hitInfo: out hit,
                                 maxDistance: Mathf.Infinity,
                                 layerMask: IgnoreLayers.value))
         {
-            Debug.DrawRay(castPos.position,(-transform.up + rb.velocity*0.7f), Color.green, 0.05f, true);
+            Debug.DrawRay(castPos.position,(-transform.up + rb.velocity*0.9f), Color.green, 0.05f, true);
 
             if(dir == -1)
             {
