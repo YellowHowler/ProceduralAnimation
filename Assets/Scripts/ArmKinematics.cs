@@ -6,7 +6,7 @@ public class ArmKinematics : MonoBehaviour
 {
     [SerializeField] private int ChainLength = 2;
     [SerializeField] public Transform Target;
-    [SerializeField] private Transform root;
+    [SerializeField] public Transform root;
 
     protected Quaternion TargetInitialRotation;
     protected Quaternion EndInitialRotation;
@@ -94,11 +94,11 @@ public class ArmKinematics : MonoBehaviour
 
     private IEnumerator ChangeTargetCor(Vector3 oldPos, Vector3 newPos, Transform body)
     {
-        WaitForSeconds sec = new WaitForSeconds(0.015f);
+        WaitForSeconds sec = new WaitForSeconds(0.006f);
         //mid = body.gameObject.GetComponent<MoveBody>().dir * Vector3.Cross((newPos-oldPos).normalized, (root.position - body.position))*3.5f + newPos;
         mid = body.up*1f + (newPos + oldPos)/2;
 
-        //body.gameObject.GetComponent<MoveBody>().speed = 0.2f;
+        body.gameObject.GetComponent<MoveBody>().speed = 6f;
         print(body.gameObject.GetComponent<MoveBody>().speed);
 
         for(float i = 0; i < 1; i+= 0.05f)
@@ -106,6 +106,8 @@ public class ArmKinematics : MonoBehaviour
             Target.position = (1-i) * ((1-i)*oldPos + i*mid) + i*((1-i)*mid + i*newPos);
             yield return sec;
         }
+
+        body.gameObject.GetComponent<MoveBody>().speed = 8f;
 
         // while(Vector3.Distance(Target.position, newPos) > 0.01f)
         // {
@@ -116,6 +118,9 @@ public class ArmKinematics : MonoBehaviour
 
         //body.gameObject.GetComponent<MoveBody>().speed = 1.5f;
         //print(body.gameObject.GetComponent<MoveBody>().speed);
+        //yield return new WaitForSeconds(0.2f);
+        //if(body.gameObject.GetComponent<MoveBody>().dir == -1) body.gameObject.GetComponent<Rigidbody>().AddForce(body.forward*10, ForceMode.VelocityChange);
+        //else body.gameObject.GetComponent<Rigidbody>().AddForce(-body.forward*10, ForceMode.VelocityChange);
     }
 
     private void OnDrawGizmos() {
