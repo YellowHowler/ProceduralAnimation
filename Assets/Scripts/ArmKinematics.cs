@@ -94,6 +94,7 @@ public class ArmKinematics : MonoBehaviour
 
     private IEnumerator ChangeTargetCor(Vector3 oldPos, Vector3 newPos, Transform body)
     {
+        body.gameObject.GetComponent<MoveBody>().isMoving = true;
         WaitForSeconds sec = new WaitForSeconds(0.006f);
         //mid = body.gameObject.GetComponent<MoveBody>().dir * Vector3.Cross((newPos-oldPos).normalized, (root.position - body.position))*3.5f + newPos;
         mid = body.up*1f + (newPos + oldPos)/2;
@@ -106,6 +107,8 @@ public class ArmKinematics : MonoBehaviour
             Target.position = (1-i) * ((1-i)*oldPos + i*mid) + i*((1-i)*mid + i*newPos);
             yield return sec;
         }
+
+        body.gameObject.GetComponent<MoveBody>().isMoving = false;
 
         body.gameObject.GetComponent<MoveBody>().speed = 8f;
 
