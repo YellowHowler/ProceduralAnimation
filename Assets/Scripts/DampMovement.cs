@@ -34,7 +34,7 @@ public class DampMovement : MonoBehaviour
         transform.rotation = Quaternion.Lerp(transform.rotation, targetRot, (mainFollow.velocity.magnitude-1.9f)/18);
 
         targetPos = follow.position + follow.forward * -0.7f * follow.localScale.z/2;
-        transform.position = targetPos - transform.forward * transform.localScale.z/2;
+        transform.position = Vector3.MoveTowards(transform.position, targetPos - transform.forward * transform.localScale.z/2, 6f * Time.deltaTime);
     }
 
     private IEnumerator RecordPos()

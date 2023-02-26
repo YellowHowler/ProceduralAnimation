@@ -97,11 +97,13 @@ public class MoveBody : MonoBehaviour
         test3.position = targetPos[2];
         test4.position = targetPos[3];
 
-        transform.position = new Vector3(transform.position.x, targetPos[0].y + 2f, transform.position.z);
+        transform.position = Vector3.MoveTowards(transform.position, new Vector3(transform.position.x, targetPos[0]+transform.up*2), transform.position.z), 3f * Time.deltaTime);
 
         lookRotation = Quaternion.LookRotation((targetPos[0] - targetPos[3]).normalized);
         //transform.rotation = Quaternion.Euler(new Vector3(Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * 3).x,transform.rotation.y,transform.rotation.z));
         //transform.Rotate(new Vector3(lookRotation.x * 10 ,0,0));
+        //transform.rotation = Quaternion.LookRotation(new Vector3(lookRotation.x, transform.rotation.y, transform.rotation.z));
+        transform.rotation = Quaternion.LookRotation(targetPos[0] - targetPos[3]);
 
 
         {
