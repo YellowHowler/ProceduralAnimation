@@ -982,7 +982,7 @@ MonoBehaviour:
   IgnoreLayers:
     serializedVersion: 2
     m_Bits: 64
-  speed: 20
+  speed: 5
   dir: 0
   arm1LeafPos: {fileID: 1654132112}
   arm2LeafPos: {fileID: 1710846858}

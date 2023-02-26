@@ -19,6 +19,7 @@ public class ArmKinematics : MonoBehaviour
     protected Transform[] Bones;
 
     private Vector3 mid;
+    private bool inAir = false;
 
     private LineRenderer lr;
     
@@ -87,6 +88,14 @@ public class ArmKinematics : MonoBehaviour
         lr.SetPositions(points);
     }
 
+    private void FixedUpdate() 
+    {
+        if(!inAir)
+        {
+            
+        }
+    }
+
     public void ChangeTarget(Vector3 oldPos, Vector3 newPos, Transform body)
     {
         StartCoroutine(ChangeTargetCor(oldPos, newPos, body));
@@ -94,8 +103,9 @@ public class ArmKinematics : MonoBehaviour
 
     private IEnumerator ChangeTargetCor(Vector3 oldPos, Vector3 newPos, Transform body)
     {
+        inAir = true;
         body.gameObject.GetComponent<MoveBody>().isMoving = true;
-        WaitForSeconds sec = new WaitForSeconds(0.01f);
+        WaitForSeconds sec = new WaitForSeconds(0.013f);
         //mid = body.gameObject.GetComponent<MoveBody>().dir * Vector3.Cross((newPos-oldPos).normalized, (root.position - body.position))*3.5f + newPos;
         mid = body.up*1f + (newPos + oldPos)/2;
 
@@ -122,8 +132,11 @@ public class ArmKinematics : MonoBehaviour
         //body.gameObject.GetComponent<MoveBody>().speed = 1.5f;
         //print(body.gameObject.GetComponent<MoveBody>().speed);
         //yield return new WaitForSeconds(0.2f);
-        //if(body.gameObject.GetComponent<MoveBody>().dir == -1) body.gameObject.GetComponent<Rigidbody>().AddForce(body.forward*10, ForceMode.VelocityChange);
-        //else body.gameObject.GetComponent<Rigidbody>().AddForce(-body.forward*10, ForceMode.VelocityChange);
+
+        if(body.gameObject.GetComponent<MoveBody>().dir == -1) body.gameObject.GetComponent<Rigidbody>().AddForce(body.forward*5, ForceMode.Impulse);
+        else if (body.gameObject.GetComponent<MoveBody>().dir == 1) body.gameObject.GetComponent<Rigidbody>().AddForce(-body.forward*5, ForceMode.Impulse);
+
+        inAir = false;
     }
 
     private void OnDrawGizmos() {
