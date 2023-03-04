@@ -26,7 +26,7 @@ public class MoveBody : MonoBehaviour
     private float armLength;
     private float offsetAmount = 1f;
 
-    private Quaternion lookRotation;
+    [HideInInspector] public Quaternion lookRotation;
 
     private Vector3 armTargetPos;
     private Vector3 arm1FinalTargetPos;
@@ -99,15 +99,16 @@ public class MoveBody : MonoBehaviour
 
         //transform.position = Vector3.MoveTowards(transform.position, new Vector3(transform.position.x, (targetPos[0]+transform.up*2).y, transform.position.z, 3f * Time.deltaTime);
 
-        lookRotation = Quaternion.LookRotation((targetPos[0] - targetPos[3]).normalized);
+        lookRotation = Quaternion.LookRotation((targetPos[0] - targetPos[3]));
         //transform.rotation = Quaternion.Euler(new Vector3(Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * 3).x,transform.rotation.y,transform.rotation.z));
         //transform.Rotate(new Vector3(lookRotation.x * 10 ,0,0));
         //transform.rotation = Quaternion.LookRotation(new Vector3(lookRotation.x, transform.rotation.y, transform.rotation.z));
-        transform.rotation = Quaternion.LookRotation(targetPos[0] - targetPos[3]);
+        //transform.rotation = Quaternion.LookRotation(targetPos[0] - targetPos[3]);
 
 
         {
-            transform.Rotate(new Vector3(0, horizontalInput * rb.velocity.magnitude * 0.1f,0));
+            //transform.Rotate(new Vector3(0, horizontalInput * rb.velocity.magnitude * 0.1f,0));
+
             rb.AddForce(movement*5, ForceMode.Impulse);
             rb.velocity = Vector3.ClampMagnitude(rb.velocity, 2f);
             float ang = Mathf.Acos(Vector3.Dot(transform.forward, rb.velocity) / (transform.forward.magnitude * rb.velocity.magnitude));
@@ -128,25 +129,27 @@ public class MoveBody : MonoBehaviour
             }
         }
 
+        Vector3 rayOffset = (new Vector3(-horizontalInput * 0.5f, 0, 0) + rb.velocity*0.9f).normalized * 1.5f;
+
         if(!isMoving && dir != 0)
         {
             if(Physics.Raycast(origin: armCastPos.position,
-                                direction: (-transform.up + rb.velocity*0.9f),
+                                direction: (-transform.up + rayOffset),
                                 hitInfo: out hit,
                                 maxDistance: Mathf.Infinity,
                                 layerMask: IgnoreLayers.value))
             {
-                Debug.DrawRay(castPos.position,(-transform.up + rb.velocity*0.9f), Color.green, 0.05f, true);
+                Debug.DrawRay(castPos.position,(-transform.up + rayOffset), Color.green, 0.05f, true);
                 armTargetPos = hit.point;
             }
 
             if(Physics.Raycast(origin: legCastPos.position,
-                                direction: (-transform.up + rb.velocity*0.9f),
+                                direction: (-transform.up + rayOffset),
                                 hitInfo: out hit,
                                 maxDistance: Mathf.Infinity,
                                 layerMask: IgnoreLayers.value))
             {
-                Debug.DrawRay(castPos.position,(-transform.up + rb.velocity*0.9f), Color.green, 0.05f, true);
+                Debug.DrawRay(castPos.position,(-transform.up + rayOffset), Color.green, 0.05f, true);
                 legTargetPos = hit.point;
             }
 
@@ -164,13 +167,13 @@ public class MoveBody : MonoBehaviour
                     targetPos[1] = targetPos[0];
                     targetPos[0] = armTargetPos;
 
-                    arm1LeafPos.gameObject.GetComponent<ArmKinematics>().ChangeTarget(targetPos[2], targetPos[0], transform);
+                    arm1LeafPos.gameObject.GetComponent<ArmKinematics>().ChangeTarget(targetPos[2], targetPos[0], transform, true);
 
                     lastMoved = 1;
                 }
                 else if (Vector3.Distance(leg2LeafPos.position, legTargetPos) > armLength && lastMoved == 1)
                 {
-                    leg2LeafPos.gameObject.GetComponent<ArmKinematics>().ChangeTarget(targetPos[3]-transform.forward*0.1f, targetPos[1]-transform.forward*0.1f, transform);
+                    leg2LeafPos.gameObject.GetComponent<ArmKinematics>().ChangeTarget(targetPos[3]-transform.forward*0.1f, targetPos[1]-transform.forward*0.1f, transform, false);
 
                     lastMoved = 2;
                 }
@@ -181,13 +184,13 @@ public class MoveBody : MonoBehaviour
                     targetPos[1] = targetPos[0];
                     targetPos[0] = armTargetPos;
 
-                    arm2LeafPos.gameObject.GetComponent<ArmKinematics>().ChangeTarget(targetPos[2], targetPos[0], transform);
+                    arm2LeafPos.gameObject.GetComponent<ArmKinematics>().ChangeTarget(targetPos[2], targetPos[0], transform, true);
 
                     lastMoved = 3;
                 }
                 else if (Vector3.Distance(leg1LeafPos.position, legTargetPos) > armLength && lastMoved == 3)
                 {
-                    leg1LeafPos.gameObject.GetComponent<ArmKinematics>().ChangeTarget(targetPos[3]-transform.forward*0.1f, targetPos[1]-transform.forward*0.1f, transform);
+                    leg1LeafPos.gameObject.GetComponent<ArmKinematics>().ChangeTarget(targetPos[3]-transform.forward*0.1f, targetPos[1]-transform.forward*0.1f, transform, false);
 
                     lastMoved = 4;
                 }
@@ -204,13 +207,13 @@ public class MoveBody : MonoBehaviour
                     targetPos[2] = targetPos[3];
                     targetPos[3] = legTargetPos;
 
-                    leg1LeafPos.gameObject.GetComponent<ArmKinematics>().ChangeTarget(targetPos[1]-transform.forward*0.1f, targetPos[3]-transform.forward*0.1f, transform);
+                    leg1LeafPos.gameObject.GetComponent<ArmKinematics>().ChangeTarget(targetPos[1]-transform.forward*0.1f, targetPos[3]-transform.forward*0.1f, transform, false);
 
                     lastMoved = 3;
                 }
                 else if (Vector3.Distance(leg2LeafPos.position, legTargetPos) > armLength && lastMoved == 3)
                 {
-                    arm2LeafPos.gameObject.GetComponent<ArmKinematics>().ChangeTarget(targetPos[0], targetPos[2], transform);
+                    arm2LeafPos.gameObject.GetComponent<ArmKinematics>().ChangeTarget(targetPos[0], targetPos[2], transform, true);
 
                     lastMoved = 2;
                 }
@@ -221,13 +224,13 @@ public class MoveBody : MonoBehaviour
                     targetPos[2] = targetPos[3];
                     targetPos[3] = legTargetPos;
 
-                    leg2LeafPos.gameObject.GetComponent<ArmKinematics>().ChangeTarget(targetPos[1]-transform.forward*0.1f, targetPos[3]-transform.forward*0.1f, transform);
+                    leg2LeafPos.gameObject.GetComponent<ArmKinematics>().ChangeTarget(targetPos[1]-transform.forward*0.1f, targetPos[3]-transform.forward*0.1f, transform, false);
 
                     lastMoved = 1;
                 }
                 else if (Vector3.Distance(arm1LeafPos.position, legTargetPos) > armLength && lastMoved == 1)
                 {
-                    arm1LeafPos.gameObject.GetComponent<ArmKinematics>().ChangeTarget(targetPos[0], targetPos[2], transform);
+                    arm1LeafPos.gameObject.GetComponent<ArmKinematics>().ChangeTarget(targetPos[0], targetPos[2], transform, true);
 
                     lastMoved = 4;
                 }
@@ -250,7 +253,7 @@ public class MoveBody : MonoBehaviour
             targetPos[1] = targetPos[0];
             targetPos[0] = armTargetPos;
 
-            arm1LeafPos.gameObject.GetComponent<ArmKinematics>().ChangeTarget(targetPos[2], targetPos[0], transform);
+            arm1LeafPos.gameObject.GetComponent<ArmKinematics>().ChangeTarget(targetPos[2], targetPos[0], transform, true);
         }
         else
         {
@@ -261,15 +264,15 @@ public class MoveBody : MonoBehaviour
             targetPos[2] = targetPos[3];
             targetPos[3] = armTargetPos;
 
-            leg1LeafPos.gameObject.GetComponent<ArmKinematics>().ChangeTarget(targetPos[1], targetPos[3], transform);
+            leg1LeafPos.gameObject.GetComponent<ArmKinematics>().ChangeTarget(targetPos[1], targetPos[3], transform, false);
         }
         arm1FinalTargetPos = armTargetPos;
 
         yield return sec;
         yield return sec2;
 
-        if(dir == -1) leg2LeafPos.gameObject.GetComponent<ArmKinematics>().ChangeTarget(targetPos[3]-transform.forward*0.1f, targetPos[1]-transform.forward*0.1f, transform);
-        else arm2LeafPos.gameObject.GetComponent<ArmKinematics>().ChangeTarget(targetPos[0]+transform.forward*0.1f, targetPos[2]+transform.forward*0.1f, transform);
+        if(dir == -1) leg2LeafPos.gameObject.GetComponent<ArmKinematics>().ChangeTarget(targetPos[3]-transform.forward*0.1f, targetPos[1]-transform.forward*0.1f, transform, false);
+        else arm2LeafPos.gameObject.GetComponent<ArmKinematics>().ChangeTarget(targetPos[0]+transform.forward*0.1f, targetPos[2]+transform.forward*0.1f, transform, true);
 
         yield return sec;
 
@@ -305,14 +308,14 @@ public class MoveBody : MonoBehaviour
             yield break;
         }
 
-        if(dir == -1) arm2LeafPos.gameObject.GetComponent<ArmKinematics>().ChangeTarget(targetPos[2], targetPos[0], transform);
-        else leg2LeafPos.gameObject.GetComponent<ArmKinematics>().ChangeTarget(targetPos[1], targetPos[3], transform);
+        if(dir == -1) arm2LeafPos.gameObject.GetComponent<ArmKinematics>().ChangeTarget(targetPos[2], targetPos[0], transform, true);
+        else leg2LeafPos.gameObject.GetComponent<ArmKinematics>().ChangeTarget(targetPos[1], targetPos[3], transform, false);
 
         yield return sec;
         yield return sec2;
 
-        if(dir == -1) leg1LeafPos.gameObject.GetComponent<ArmKinematics>().ChangeTarget(targetPos[3]-transform.forward*0.1f, targetPos[1]-transform.forward*0.1f, transform);
-        else arm1LeafPos.gameObject.GetComponent<ArmKinematics>().ChangeTarget(targetPos[0]+transform.forward*0.1f, targetPos[2]+transform.forward*0.1f, transform);
+        if(dir == -1) leg1LeafPos.gameObject.GetComponent<ArmKinematics>().ChangeTarget(targetPos[3]-transform.forward*0.1f, targetPos[1]-transform.forward*0.1f, transform, false);
+        else arm1LeafPos.gameObject.GetComponent<ArmKinematics>().ChangeTarget(targetPos[0]+transform.forward*0.1f, targetPos[2]+transform.forward*0.1f, transform, true);
 
         yield return sec;
 

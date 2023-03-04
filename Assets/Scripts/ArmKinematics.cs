@@ -96,29 +96,53 @@ public class ArmKinematics : MonoBehaviour
         }
     }
 
-    public void ChangeTarget(Vector3 oldPos, Vector3 newPos, Transform body)
+    public void ChangeTarget(Vector3 oldPos, Vector3 newPos, Transform body, bool front)
     {
-        StartCoroutine(ChangeTargetCor(oldPos, newPos, body));
+        StartCoroutine(ChangeTargetCor(oldPos, newPos, body, front));
     }
 
-    private IEnumerator ChangeTargetCor(Vector3 oldPos, Vector3 newPos, Transform body)
+    private IEnumerator ChangeTargetCor(Vector3 oldPos, Vector3 newPos, Transform body, bool front)
     {
+        MoveBody bodyScript = body.gameObject.GetComponent<MoveBody>();
+
         inAir = true;
-        body.gameObject.GetComponent<MoveBody>().isMoving = true;
+        bodyScript.isMoving = true;
         WaitForSeconds sec = new WaitForSeconds(0.013f);
         //mid = body.gameObject.GetComponent<MoveBody>().dir * Vector3.Cross((newPos-oldPos).normalized, (root.position - body.position))*3.5f + newPos;
         mid = body.up*1f + (newPos + oldPos)/2;
 
+        Quaternion curRotation = body.rotation;
+        Quaternion lookRotation = bodyScript.lookRotation;
+
         //body.gameObject.GetComponent<MoveBody>().speed = 6f;
-        print(body.gameObject.GetComponent<MoveBody>().speed);
+        print(bodyScript.speed);
 
         for(float i = 0; i < 1; i+= 0.05f)
         {
             Target.position = (1-i) * ((1-i)*oldPos + i*mid) + i*((1-i)*mid + i*newPos);
+            
+            if(i <= 0.5f) body.rotation = Quaternion.Slerp(curRotation, lookRotation, i * 2);
+
             yield return sec;
         }
 
-        body.gameObject.GetComponent<MoveBody>().isMoving = false;
+        if(front == (bodyScript.dir == -1)){
+            Vector3 curPosition = body.position;
+            Vector3 targetPosition = body.up * 2f + (newPos + oldPos)/2 + body.forward*0.5f;   
+            float bodySpeed = bodyScript.speed;
+
+            bodyScript.speed = 0;
+
+            for(float i = 0; i < 1; i+= 0.1f)
+            {
+                body.position = Vector3.Lerp(curPosition, targetPosition, i);
+                yield return sec;
+            }
+
+            bodyScript.speed = bodySpeed;
+        }
+
+        bodyScript.isMoving = false;
 
         //body.gameObject.GetComponent<MoveBody>().speed = 8f;
 
@@ -133,8 +157,8 @@ public class ArmKinematics : MonoBehaviour
         //print(body.gameObject.GetComponent<MoveBody>().speed);
         //yield return new WaitForSeconds(0.2f);
 
-        if(body.gameObject.GetComponent<MoveBody>().dir == -1) body.gameObject.GetComponent<Rigidbody>().AddForce(body.forward*5, ForceMode.Impulse);
-        else if (body.gameObject.GetComponent<MoveBody>().dir == 1) body.gameObject.GetComponent<Rigidbody>().AddForce(-body.forward*5, ForceMode.Impulse);
+        if(bodyScript.dir == -1) body.gameObject.GetComponent<Rigidbody>().AddForce(body.forward*5, ForceMode.Impulse);
+        else if (bodyScript.dir == 1) body.gameObject.GetComponent<Rigidbody>().AddForce(-body.forward*5, ForceMode.Impulse);
 
         inAir = false;
     }

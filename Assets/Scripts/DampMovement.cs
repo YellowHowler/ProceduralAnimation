@@ -21,20 +21,53 @@ public class DampMovement : MonoBehaviour
     void Start()
     {
         d = Vector3.Distance(follow.position, transform.position);
+        followRb = follow.gameObject.GetComponent<Rigidbody>();
         prevRot = transform.rotation;
 
         rotRecord = new Quaternion[10];
         posRecord = new Vector3[10];
 
         StartCoroutine(RecordPos());
+        //StartCoroutine(FollowBody());
     }
 
-    void Update()
+    void LateUpdate()
     {
         transform.rotation = Quaternion.Lerp(transform.rotation, targetRot, (mainFollow.velocity.magnitude-1.9f)/18);
 
         targetPos = follow.position + follow.forward * -0.7f * follow.localScale.z/2;
-        transform.position = Vector3.MoveTowards(transform.position, targetPos - transform.forward * transform.localScale.z/2, 6f * Time.deltaTime);
+        targetPos = targetPos - transform.forward * transform.localScale.z/2;
+        
+        //Vector3.MoveTowards(transform.position, targetToFollow.position, Time.deltaTime * ms)
+        if(0.1f <= Vector3.Distance(transform.position, targetPos)) transform.position = Vector3.MoveTowards(transform.position, targetPos, 8f * Time.deltaTime);
+    }
+
+    private IEnumerator FollowBody ()
+    {
+        WaitForSeconds sec = new WaitForSeconds(0.005f);
+        WaitForSeconds sec2 = new WaitForSeconds(0.1f);
+
+        while(true)
+        {
+            transform.rotation = Quaternion.Lerp(transform.rotation, targetRot, (mainFollow.velocity.magnitude-1.9f)/18);
+
+            targetPos = follow.position + follow.forward * -0.7f * follow.localScale.z/2 + follow.forward.normalized * followRb.velocity.magnitude * 0.1f;
+            targetPos = targetPos - transform.forward * transform.localScale.z/2;
+            
+            //Vector3.MoveTowards(transform.position, targetToFollow.position, Time.deltaTime * ms)
+
+            //transform.position = targetPos;
+
+            
+            for(float i = 0; i <= 1; i+=0.25f)
+            {
+                if(0.1f <= Vector3.Distance(transform.position, targetPos)) transform.position = Vector3.Lerp(transform.position, targetPos, i);
+                yield return sec;
+            }
+            
+
+            yield return sec2;
+        }
     }
 
     private IEnumerator RecordPos()
