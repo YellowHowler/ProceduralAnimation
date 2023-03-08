@@ -45,27 +45,27 @@ public class Move : MonoBehaviour
         else return nullVector3;
     }
 
-    private void MoveArm()
+    private void MoveArm(Vector3 target)
     {
         isMoving = true;
 
-        StartCoroutine(MoveBody());
+        StartCoroutine(MoveBody(target));
         if(curArm == 1)
-            arm1.gameObject.GetComponent<Arm>().ChangeTarget(arm1.position, aimPos, transform);
+            arm1.gameObject.GetComponent<Arm>().ChangeTarget(arm1.position, target, transform);
         else if(curArm == 2)
-            arm2.gameObject.GetComponent<Arm>().ChangeTarget(arm2.position, aimPos, transform);
+            arm2.gameObject.GetComponent<Arm>().ChangeTarget(arm2.position, target, transform);
     }
 
-    private IEnumerator MoveBody()
+    private IEnumerator MoveBody(Vector3 target)
     {
         Vector3 frontPos, backPos;
-        frontPos = aimPos;
+        frontPos = target;
         if(curArm == 1)
             backPos = arm1.position;
         else
             backPos = arm2.position;
 
-        WaitForSeconds sec = new WaitForSeconds(0.05f);
+        WaitForSeconds sec = new WaitForSeconds(0.06f);
 
         Quaternion curRot = transform.rotation;
         Quaternion targetRot = Quaternion.LookRotation(curDir * (frontPos - backPos));
@@ -112,7 +112,7 @@ public class Move : MonoBehaviour
         float horizontalInput = Input.GetAxis("Horizontal");
     	float verticalInput = Input.GetAxis("Vertical");
 
-        Vector3 rayOffset = Vector3.zero + (horizontalInput*transform.right*0.5f + verticalInput*transform.forward).normalized * maxLegDist;
+        Vector3 rayOffset = Vector3.zero + (horizontalInput*transform.right*0.3f + verticalInput*transform.forward).normalized * maxLegDist;
         aimPos = CastRayDown(rayOffset); 
 
         mouseRay.position = aimPos;
@@ -125,7 +125,20 @@ public class Move : MonoBehaviour
             
             curDir = dir;
 
-            MoveArm();
+            MoveArm(aimPos);
+        }
+        else if (verticalInput == 0 && !isMoving && Vector3.Distance(arm1.position, arm2.position) > 0.5f)
+        {
+            if(curArm == 1) 
+            {
+                curArm = 2;
+                MoveArm(arm1.position);
+            }
+            else
+            {
+                curArm = 1;
+                MoveArm(arm2.position);
+            }
         }
     
         print(curArm);
