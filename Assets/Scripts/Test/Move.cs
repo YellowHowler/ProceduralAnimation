@@ -6,6 +6,7 @@ public class Move : MonoBehaviour
 {
     // test
     [SerializeField] Transform mouseRay;
+    [SerializeField] Transform temp;
     //test 
 
     [SerializeField] private LayerMask IgnoreLayers; 
@@ -18,6 +19,8 @@ public class Move : MonoBehaviour
     [SerializeField] private Transform leg1;
     [SerializeField] private Transform leg2;
 
+    [SerializeField] private FollowBody nextBody;
+
     public bool isMoving{get;set;}
 
     private int curArm = 1;
@@ -27,8 +30,8 @@ public class Move : MonoBehaviour
     private Vector3 bodyRayPos;
     private Vector3 aimPos;
 
-    private float optBodyHeight = 1.6f;
-    private float maxLegDist = 1f;
+    private float optBodyHeight = 2f;
+    private float maxLegDist = 1.2f;
 
     private Vector3 nullVector3;
 
@@ -64,26 +67,22 @@ public class Move : MonoBehaviour
             backPos = arm1.position;
         else
             backPos = arm2.position;
-
+        
         WaitForSeconds sec = new WaitForSeconds(0.06f);
 
         Quaternion curRot = transform.rotation;
         Quaternion targetRot = Quaternion.LookRotation(curDir * (frontPos - backPos));
-
-        for(float i = 0; i < 1; i+= 0.2f)
-        {
-            transform.rotation = Quaternion.Slerp(curRot, targetRot, i);
-            yield return sec;
-        }
-
-        //yield return new WaitForSeconds(0.1f);
+        temp.rotation = targetRot;
 
         Vector3 curPos = transform.position;
-        Vector3 targetPos = frontPos + transform.up*optBodyHeight;
+        Vector3 targetPos = frontPos + temp.up*optBodyHeight;
+
+        nextBody.MoveBody(Vector3.Distance(targetPos, curPos) , 0.06f, curDir);
 
         for(float i = 0; i < 1; i+= 0.1f)
         {
             transform.position = Vector3.Lerp(curPos, targetPos, i);
+            if(i < 0.5f) transform.rotation = Quaternion.Slerp(curRot, targetRot, i*2);
             yield return sec;
         }
     }
@@ -104,6 +103,8 @@ public class Move : MonoBehaviour
         if(bodyRayPos != nullVector3)
         {
             transform.position = bodyRayPos + transform.up*optBodyHeight;
+            arm1.gameObject.GetComponent<Arm>().ChangeTargetPos(bodyRayPos);
+            arm2.gameObject.GetComponent<Arm>().ChangeTargetPos(bodyRayPos);
         }
     }
 
@@ -140,7 +141,5 @@ public class Move : MonoBehaviour
                 MoveArm(arm2.position);
             }
         }
-    
-        print(curArm);
     }
 }

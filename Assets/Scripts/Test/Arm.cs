@@ -48,7 +48,7 @@ public class Arm : MonoBehaviour
 
     private void Start()
     {
-        Target.position = transform.position;
+        //Target.position = transform.position;
     }
   
     private void LateUpdate()
@@ -93,6 +93,11 @@ public class Arm : MonoBehaviour
         lr.SetPositions(points);
     }
 
+    public void ChangeTargetPos(Vector3 pos)
+    {
+        Target.position = pos;
+    }
+
     public void ChangeTarget(Vector3 oldPos, Vector3 newPos, Transform body)
     {
         StartCoroutine(ChangeTargetCor(oldPos, newPos, body));
@@ -112,7 +117,7 @@ public class Arm : MonoBehaviour
             yield return sec;
         }
 
-        yield return new WaitForSeconds(0.4f);
+        yield return new WaitForSeconds(0.3f);
         bodyScript.isMoving = false;
     }
 }
