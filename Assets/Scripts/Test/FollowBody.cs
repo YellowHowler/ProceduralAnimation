@@ -29,20 +29,20 @@ public class FollowBody : MonoBehaviour
         if(started) transform.LookAt(prevBody.position);
     }
 
-    public void MoveBody(float distance, float interval, int direction)
+    public void MoveBody(float distance, float interval, int direction, Vector3 aimPos)
     {
-        if(started) StartCoroutine(MoveBodyCor(distance, interval, direction));
+        if(started) StartCoroutine(MoveBodyCor(distance, interval, direction, aimPos));
     }
 
-    private IEnumerator MoveBodyCor(float distance, float interval, int direction)
+    private IEnumerator MoveBodyCor(float distance, float interval, int direction, Vector3 aimPos)
     {
-        if(nextBody != null) nextBody.gameObject.GetComponent<FollowBody>().MoveBody(distance, interval, direction);
-
         WaitForSeconds sec = new WaitForSeconds(interval);
 
         Vector3 curPos = transform.position;
-        //Vector3 targetPos = prevBody.position - transform.forward*dist;
-        Vector3 targetPos = transform.position +transform.forward*distance;
+        Vector3 targetPos = aimPos - transform.forward*dist/2 - prevBody.forward*dist/2;
+        //Vector3 targetPos = prevBody.position + direction * transform.forward*dist * 2;
+
+        if(nextBody != null) nextBody.gameObject.GetComponent<FollowBody>().MoveBody(distance, interval, direction, targetPos);
 
         for(float i = 0; i <= 1; i+= 0.1f)
         {
