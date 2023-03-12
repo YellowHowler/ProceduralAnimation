@@ -77,7 +77,7 @@ public class Move : MonoBehaviour
         Vector3 curPos = transform.position;
         Vector3 targetPos = frontPos + temp.up*optBodyHeight;
 
-        nextBody.MoveBody(Vector3.Distance(targetPos, curPos) , 0.06f, curDir, targetPos);
+        //nextBody.MoveBody(Vector3.Distance(targetPos, curPos) , 0.06f, curDir, targetPos);
 
         for(float i = 0; i < 1; i+= 0.1f)
         {
