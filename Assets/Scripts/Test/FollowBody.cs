@@ -31,7 +31,7 @@ public class FollowBody : MonoBehaviour
 
     public void MoveBody(float distance, float interval, int direction, Vector3 aimPos)
     {
-        if(started) StartCoroutine(MoveBodyCor(distance, interval, direction, aimPos));
+        //if(started) StartCoroutine(MoveBodyCor(distance, interval, direction, aimPos));
     }
 
     private IEnumerator MoveBodyCor(float distance, float interval, int direction, Vector3 aimPos)
@@ -46,7 +46,7 @@ public class FollowBody : MonoBehaviour
 
         for(float i = 0; i <= 1; i+= 0.1f)
         {
-            transform.position = Vector3.Lerp(curPos, targetPos, i);
+            //transform.position = Vector3.Lerp(curPos, targetPos, i);
             yield return sec;
         }
 

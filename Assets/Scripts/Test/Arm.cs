@@ -15,7 +15,9 @@ public class Arm : MonoBehaviour
     [SerializeField] public float CompleteLength;
     [SerializeField] private int Iterations = 10;
     [SerializeField] private float Delta = 0.001f;
-    
+
+    //
+
     protected Transform[] Bones;
 
     private Vector3 mid;
@@ -34,6 +36,7 @@ public class Arm : MonoBehaviour
         EndInitialRotation = transform.rotation;
         var current = transform;
         CompleteLength = 0;
+
         for (int i = ChainLength - 1; i >= 0; i--)
         {
             CompleteLength += (current.position - current.parent.position).magnitude;
@@ -108,16 +111,38 @@ public class Arm : MonoBehaviour
         Move bodyScript = body.gameObject.GetComponent<Move>();
 
         bodyScript.isMoving = true;
-        WaitForSeconds sec = new WaitForSeconds(0.013f);
-        mid = body.up*1f + (newPos + oldPos)/2;
+        WaitForSeconds sec = new WaitForSeconds(0.02f);
+        mid = body.up*2f + (newPos + oldPos)/2;
+
+        bool changedMoving = false;
 
         for(float i = 0; i < 1; i+= 0.05f)
         {
-            Target.position = (1-i) * ((1-i)*oldPos + i*mid) + i*((1-i)*mid + i*newPos);
+            Target.position = (1-i) * ((1-i)*oldPos + i*mid) + i*((1-i)*mid + i*newPos); //bezier curve for moving leg upwards
+            //bodyNode.Rotate(0, 0, AngleDir(bodyNode.forward, root.position - bodyNode.position, bodyNode.up) * 10f * i);
+
+            if(i >= 0.8f && changedMoving == false)
+            {
+                bodyScript.isMoving = false; 
+                changedMoving = true;
+            }
+
             yield return sec;
         }
 
-        yield return new WaitForSeconds(0.1f);
-        bodyScript.isMoving = false;
+         //bodyScript.isMoving = false; 
     }
+
+    private float AngleDir(Vector3 fwd, Vector3 targetDir, Vector3 up) {
+		Vector3 perp = Vector3.Cross(fwd, targetDir);
+		float dir = Vector3.Dot(perp, up);
+		
+		if (dir > 0f) {
+			return 1f;
+		} else if (dir < 0f) {
+			return -1f;
+		} else {
+			return 0f;
+		}
+	}
 }

@@ -28,14 +28,14 @@ public class DampMovement : MonoBehaviour
         posRecord = new Vector3[10];
 
         StartCoroutine(RecordPos());
-        //StartCoroutine(FollowBody());
+        StartCoroutine(FollowBody());
     }
 
     void LateUpdate()
     {
         transform.rotation = Quaternion.Lerp(transform.rotation, targetRot, (mainFollow.velocity.magnitude-1.9f)/18);
 
-        targetPos = follow.position + follow.forward * -0.7f * follow.localScale.z/2;
+        targetPos = follow.position + follow.forward * -1f * follow.localScale.z/2;
         targetPos = targetPos - transform.forward * transform.localScale.z/2;
         
         //Vector3.MoveTowards(transform.position, targetToFollow.position, Time.deltaTime * ms)

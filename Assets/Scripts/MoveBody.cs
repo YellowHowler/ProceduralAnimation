@@ -84,7 +84,7 @@ public class MoveBody : MonoBehaviour
         }
     }
     
-    void Update()
+    void FixedUpdate()
     {
         float horizontalInput = Input.GetAxis("Horizontal");
     	float verticalInput = Input.GetAxis("Vertical");
@@ -97,18 +97,9 @@ public class MoveBody : MonoBehaviour
         test3.position = targetPos[2];
         test4.position = targetPos[3];
 
-        //transform.position = Vector3.MoveTowards(transform.position, new Vector3(transform.position.x, (targetPos[0]+transform.up*2).y, transform.position.z, 3f * Time.deltaTime);
-
         lookRotation = Quaternion.LookRotation((targetPos[0] - targetPos[3]));
-        //transform.rotation = Quaternion.Euler(new Vector3(Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * 3).x,transform.rotation.y,transform.rotation.z));
-        //transform.Rotate(new Vector3(lookRotation.x * 10 ,0,0));
-        //transform.rotation = Quaternion.LookRotation(new Vector3(lookRotation.x, transform.rotation.y, transform.rotation.z));
-        //transform.rotation = Quaternion.LookRotation(targetPos[0] - targetPos[3]);
-
 
         {
-            //transform.Rotate(new Vector3(0, horizontalInput * rb.velocity.magnitude * 0.1f,0));
-
             rb.AddForce(movement*5, ForceMode.Impulse);
             rb.velocity = Vector3.ClampMagnitude(rb.velocity, 2f);
             float ang = Mathf.Acos(Vector3.Dot(transform.forward, rb.velocity) / (transform.forward.magnitude * rb.velocity.magnitude));
