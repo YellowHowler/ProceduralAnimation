@@ -12,8 +12,7 @@ public class Slither : MonoBehaviour //attach to first body
     {
         for(int i = 0; i < body.Count; i++)
         {
-            positions.Add(transform.position - transform.forward.normalized * bodyDist * i);
-            body[i].position = positions[i];
+            positions.Add(body[i].position);
         }
     }
 
@@ -29,7 +28,8 @@ public class Slither : MonoBehaviour //attach to first body
 
         for(int i = 1; i < body.Count; i++)
         {
-            body[i].position = Vector3.Lerp(positions[i], positions[i-1], curDist/bodyDist);
+            Vector3 newPos = Vector3.Lerp(positions[i], positions[i-1], curDist/bodyDist);
+            if(Vector3.Distance(newPos, body[i].position) <= bodyDist + 0.5f) body[i].position = newPos;
             body[i].rotation = Quaternion.LookRotation(body[i-1].position - body[i].position, transform.up);
         }
     }

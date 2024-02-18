@@ -211,7 +211,7 @@ public class FrontBody : MonoBehaviour
                 if(curLimb.type == LimbType.Arm) //if arm get new position forward
                 {
                     Vector3 rayOffset = (hor*transform.right + vert*transform.forward*5).normalized * 1.2f;
-                    aimPos = CastRayDown(transform.position, rayOffset + (curLimb.root.position - transform.position) * 0.6f); 
+                    aimPos = CastRayDown(transform.position, rayOffset + (curLimb.root.position - transform.position) * 0.4f); 
 
                     cycleProgress = 0; //body position progession percent relative to two paws
                     initRot = transform.rotation;
