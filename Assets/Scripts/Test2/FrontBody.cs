@@ -26,6 +26,7 @@ public class FrontBody : MonoBehaviour
 
     //properties
     private float maxDist = 3f;
+    private float height = 0.55f;
     //----------------------------------------------------------------
 
 
@@ -144,7 +145,8 @@ public class FrontBody : MonoBehaviour
     
     void Start()
     {
-        maxDist = arm1.length * 0.8f;
+        maxDist = arm1.length * 1f;
+        print(maxDist);
 
         frontPos = CastRayDown(transform.position, new Vector3(0, 0, 0));
         prevFrontPos = frontPos;
@@ -210,7 +212,7 @@ public class FrontBody : MonoBehaviour
                 //getting the target position
                 if(curLimb.type == LimbType.Arm) //if arm get new position forward
                 {
-                    Vector3 rayOffset = (hor*transform.right + vert*transform.forward*5).normalized * 1.2f;
+                    Vector3 rayOffset = (hor*transform.right + vert*transform.forward*5).normalized * 2f;
                     aimPos = CastRayDown(transform.position, rayOffset + (curLimb.root.position - transform.position) * 0.4f); 
 
                     cycleProgress = 0; //body position progession percent relative to two paws
@@ -247,12 +249,12 @@ public class FrontBody : MonoBehaviour
                 projectionTarget.position = projectedPos;
                 transform.position = (projectedPos + curLimb.leaf.position) / 2 + transform.up * maxDist*0.9f;
                 */
-                transform.position = Vector3.Lerp(curLimb.alt.leaf.position, aimPos, cycleProgress) + transform.up * maxDist*0.9f;
+                transform.position = Vector3.Lerp(curLimb.alt.leaf.position, aimPos, cycleProgress) + transform.up * height;
             }
             else
             {
                 //transform.position = (arm1.leaf.position + arm2.leaf.position) / 2 + transform.up * maxDist*0.9f;
-                transform.position = Vector3.Lerp(backArm.leaf.position, backArm.alt.leaf.position, cycleProgress) + transform.up * maxDist*0.9f;
+                transform.position = Vector3.Lerp(backArm.leaf.position, backArm.alt.leaf.position, cycleProgress) + transform.up * height;
             }
             
         }

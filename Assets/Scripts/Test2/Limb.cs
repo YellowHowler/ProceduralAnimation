@@ -22,12 +22,16 @@ public class Limb : MonoBehaviour
      
     protected Transform[] bones;
 
+        //public Transform modelLeaf;
+     
+        //protected Transform[] modelBones;
+
     public Limb alt; //other arm or leg
     //----------------------------------------------------------------
 
 
     //constants
-    private int chainLength = 2;
+    public int chainLength = 2;
     
     [HideInInspector] public float length;
     private int iterations = 10;
@@ -72,10 +76,14 @@ public class Limb : MonoBehaviour
         lr.SetWidth(0.1f, 0.1f);
 
         bones = new Transform[chainLength + 1];
+        //modelBones = new Transform[chainLength + 1];
 
         targetInitRot = target.rotation;
         endInitRot = transform.rotation;
+
         var current = transform;
+
+        //var modelCurrent = modelLeaf.transform;
         length = 0;
 
         for (int i = chainLength - 1; i >= 0; i--)
@@ -84,7 +92,12 @@ public class Limb : MonoBehaviour
             bones[i + 1] = current;
             bones[i] = current.parent;
 
+            //modelBones[i + 1] = modelCurrent;
+            //modelBones[i] = modelCurrent.parent;
+
             current = current.parent;
+
+            //modelCurrent = modelCurrent.parent;
         }
         if (bones[0] == null)
             throw new UnityException("The chain value is longer than the ancestor chain!");
@@ -130,9 +143,20 @@ public class Limb : MonoBehaviour
         }
         
         Vector3[] points = new Vector3[bones.Length];
-
+        
         for(int i = 0; i < bones.Length; i++)
+        {
             points[i] = bones[i].position;
+        }
+
+        if(type == LimbType.Leg)
+        {
+            Vector3 zero = bones[0].position;
+            Vector3 one = bones[1].position;
+            Vector3 two = bones[2].position;
+
+            points[1] = zero + Vector3.Reflect(two - one, zero-two);
+        }
 
         lr.SetPositions(points);
     }
