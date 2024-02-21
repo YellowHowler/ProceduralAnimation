@@ -6,16 +6,13 @@ using EnumDef;
 
 public class Limb : MonoBehaviour
 {
-    private LineRenderer lr;
-
     //values
     public LimbType type;
     //----------------------------------------------------------------
 
 
     //Transform and Limb references
-    public Transform target;
-    public Transform pole;
+    private Transform target;
 
     public Transform root;
     public Transform leaf;
@@ -48,9 +45,6 @@ public class Limb : MonoBehaviour
     //temp variables
     private Vector3 mid;
     private bool inAir = false;
-
-    protected Quaternion targetInitRot;
-    protected Quaternion endInitRot;
     //----------------------------------------------------------------
 
     private Vector3 CastRayDown(Vector3 rayOrigin, Vector3 rayOffset)
@@ -69,96 +63,12 @@ public class Limb : MonoBehaviour
             return new Vector3(0, 10000, 0);
         }
     }
-    
-    private void Awake()
-    {
-        lr = GetComponent<LineRenderer>();
-        lr.SetWidth(0.1f, 0.1f);
-
-        bones = new Transform[chainLength + 1];
-        //modelBones = new Transform[chainLength + 1];
-
-        targetInitRot = target.rotation;
-        endInitRot = transform.rotation;
-
-        var current = transform;
-
-        //var modelCurrent = modelLeaf.transform;
-        length = 0;
-
-        for (int i = chainLength - 1; i >= 0; i--)
-        {
-            length += (current.position - current.parent.position).magnitude;
-            bones[i + 1] = current;
-            bones[i] = current.parent;
-
-            //modelBones[i + 1] = modelCurrent;
-            //modelBones[i] = modelCurrent.parent;
-
-            current = current.parent;
-
-            //modelCurrent = modelCurrent.parent;
-        }
-        if (bones[0] == null)
-            throw new UnityException("The chain value is longer than the ancestor chain!");
-    }
 
     private void Start()
     {
+        length = GetComponent<ArmIK>().length;
+        target = GetComponent<ArmIK>().target;
         target.position = CastRayDown(root.position, Vector3.zero);
-    }
-  
-    private void LateUpdate()
-    {
-        var lastBone = bones[bones.Length - 1];
-       
-        for (int iteration = 0; iteration < iterations; iteration++)
-        {
-            for (var i = bones.Length - 1; i >= 0; i--)
-            {
-                if (i == bones.Length - 1)
-                {
-                    bones[i].rotation = target.rotation * Quaternion.Inverse(targetInitRot) * endInitRot;
-                }
-                else
-                {
-                    bones[i].rotation = Quaternion.FromToRotation(lastBone.position - bones[i].position, target.position - bones[i].position) * bones[i].rotation;
-            
-                    if (pole != null && i + 2 <= bones.Length - 1)
-                    {
-                        var plane = new Plane(bones[i + 2].position - bones[i].position, bones[i].position);
-                        var projectedpole = plane.ClosestPointOnPlane(pole.position);
-                        var projectedBone = plane.ClosestPointOnPlane(bones[i + 1].position);
-                        if ((projectedBone - bones[i].position).sqrMagnitude > 0.01f)
-                        {
-                            var angle = Vector3.SignedAngle(projectedBone - bones[i].position, projectedpole - bones[i].position, plane.normal);
-                            bones[i].rotation = Quaternion.AngleAxis(angle, plane.normal) * bones[i].rotation;
-                        }
-                    }
-                }
-               
-                if ((lastBone.position - target.position).sqrMagnitude < delta * delta)
-                    break;
-            }
-        }
-        
-        Vector3[] points = new Vector3[bones.Length];
-        
-        for(int i = 0; i < bones.Length; i++)
-        {
-            points[i] = bones[i].position;
-        }
-
-        if(type == LimbType.Leg)
-        {
-            Vector3 zero = bones[0].position;
-            Vector3 one = bones[1].position;
-            Vector3 two = bones[2].position;
-
-            points[1] = zero + Vector3.Reflect(two - one, zero-two);
-        }
-
-        lr.SetPositions(points);
     }
 
     public void ChangeTargetPos(Vector3 pos)
