@@ -9,6 +9,7 @@ namespace EnumDef
 
     public enum LimbType
     {
+        Body = 0,
         Arm = 1,
         Leg = 2,
     }

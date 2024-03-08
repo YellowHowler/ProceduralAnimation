@@ -66,8 +66,8 @@ public class Limb : MonoBehaviour
 
     private void Start()
     {
-        length = GetComponent<ArmIK>().length;
-        target = GetComponent<ArmIK>().target;
+        length = GetComponent<InverseKinematics>().length;
+        target = GetComponent<InverseKinematics>().target;
         target.position = CastRayDown(root.position, Vector3.zero);
     }
 
@@ -94,7 +94,7 @@ public class Limb : MonoBehaviour
         for(float i = 0; i < 1; i+= 0.05f)
         {
             target.position = (1-i) * ((1-i)*oldPos + i*mid) + i*((1-i)*mid + i*newPos);
-            bodyScript.cycleProgress = Mathf.Clamp(bodyScript.cycleProgress + 0.024f, 0, 1);
+            bodyScript.cycleProgress = Mathf.Clamp(bodyScript.cycleProgress + 0.039f, 0, 1);
 
             yield return sec;
 

@@ -47,7 +47,8 @@ public class FrontBody : MonoBehaviour
     [SerializeField] private LayerMask IgnoreLayers; 
     private Ray ray;
     private RaycastHit hit;
-    private Vector3 aimPos; 
+    private Vector3 armAimPos; 
+    private Vector3 legAimPos; 
     private Vector3 frontPos;
     private Vector3 prevFrontPos;
     //----------------------------------------------------------------
@@ -213,7 +214,7 @@ public class FrontBody : MonoBehaviour
                 if(curLimb.type == LimbType.Arm) //if arm get new position forward
                 {
                     Vector3 rayOffset = (hor*transform.right + vert*transform.forward*5).normalized * 2f;
-                    aimPos = CastRayDown(transform.position, rayOffset + (curLimb.root.position - transform.position) * 0.4f); 
+                    armAimPos = CastRayDown(transform.position, rayOffset + (curLimb.root.position - transform.position) * 0.3f); 
 
                     cycleProgress = 0; //body position progession percent relative to two paws
                     initRot = transform.rotation;
@@ -221,16 +222,22 @@ public class FrontBody : MonoBehaviour
                     prevFrontPos = frontPos;
                     frontPos = CastRayDown(transform.position, rayOffset); 
 
-                    rayTarget.position = aimPos;
+                    rayTarget.position = armAimPos;
+                    
+                    //moving limb
+                    MoveArm(armAimPos, curLimb);
                 }
                 else //if leg aim for position right begind arm
                 {
-                    aimPos = backArm.leaf.position;
+                    legAimPos = backArm.leaf.position;
+                    //armAimPos = prevFrontPos;
+
+                    //moving limb
+                    MoveArm(legAimPos, curLimb);
                 }
 
 
-                //moving limb
-                MoveArm(aimPos, curLimb);
+                
             }
         }
         else //when moving limb
@@ -242,6 +249,11 @@ public class FrontBody : MonoBehaviour
 
             transform.rotation = Quaternion.Slerp(initRot, Quaternion.LookRotation(frontDir, Vector3.up), cycleProgress);
 
+            Vector3 legHorDir = leg1.root.position - leg2.root.position;
+            legBody.rotation = Quaternion.Slerp(initRot, Quaternion.LookRotation(-Vector3.Cross(Vector3.Cross(frontDir, legHorDir), legHorDir), Vector3.up), cycleProgress);
+
+            Debug.DrawRay(legBody.transform.position, legBody.transform.forward, Color.red);
+
             if(curLimb.type == LimbType.Arm)
             {
                 /*
@@ -249,12 +261,19 @@ public class FrontBody : MonoBehaviour
                 projectionTarget.position = projectedPos;
                 transform.position = (projectedPos + curLimb.leaf.position) / 2 + transform.up * maxDist*0.9f;
                 */
-                transform.position = Vector3.Lerp(curLimb.alt.leaf.position, aimPos, cycleProgress) + transform.up * height;
+                transform.position = Vector3.Lerp(curLimb.alt.leaf.position, armAimPos, cycleProgress) + transform.up * height;
+                
+                legBody.position = Vector3.Lerp(backLeg.leaf.position, backLeg.alt.leaf.position, ) + legBody.transform.up * height;
             }
             else
             {
                 //transform.position = (arm1.leaf.position + arm2.leaf.position) / 2 + transform.up * maxDist*0.9f;
                 transform.position = Vector3.Lerp(backArm.leaf.position, backArm.alt.leaf.position, cycleProgress) + transform.up * height;
+
+                Vector3 projectedPos = Vector3.ProjectOnPlane(curLimb.leaf.position, transform.up) + Vector3.Dot(curLimb.alt.leaf.position, transform.up) * transform.up;
+                projectionTarget.position = projectedPos;
+                transform.position = (projectedPos + curLimb.leaf.position) / 2 + transform.up * maxDist*0.9f;
+                legBody.position = Vector3.Lerp(curLimb.alt.leaf.position, legAimPos, (cycleProgress > 0.5f ? cycleProgress - 0.5f : cycleProgress)) + legBody.transform.up * height;
             }
             
         }
