@@ -94,7 +94,10 @@ public class Limb : MonoBehaviour
         for(float i = 0; i < 1; i+= 0.05f)
         {
             target.position = (1-i) * ((1-i)*oldPos + i*mid) + i*((1-i)*mid + i*newPos);
-            bodyScript.cycleProgress = Mathf.Clamp(bodyScript.cycleProgress + 0.039f, 0, 1);
+            bodyScript.cycleProgressArm = Mathf.Clamp(bodyScript.cycleProgressArm + 0.039f, 0, 1);
+            bodyScript.cycleProgressLeg = Mathf.Clamp(bodyScript.cycleProgressLeg + 0.039f, 0, 1);
+
+            if(bodyScript.cycleProgressArm ==1 ) print("hi");
 
             yield return sec;
 

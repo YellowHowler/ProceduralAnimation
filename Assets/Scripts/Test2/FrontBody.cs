@@ -34,8 +34,9 @@ public class FrontBody : MonoBehaviour
     public bool isMoving{get;set;}
     private Limb curLimb{get;set;}
     private Limb prevLimb{get;set;}
-    public float cycleProgress{get;set;}
-    private Quaternion initRot;
+    
+    public LimbBodyInfo armBodyInfo{get;set;}
+    public LimbBodyInfo legBodyInfo{get;set;}
     //----------------------------------------------------------------
 
 
@@ -49,8 +50,6 @@ public class FrontBody : MonoBehaviour
     private RaycastHit hit;
     private Vector3 armAimPos; 
     private Vector3 legAimPos; 
-    private Vector3 frontPos;
-    private Vector3 prevFrontPos;
     //----------------------------------------------------------------
 
 
@@ -66,6 +65,23 @@ public class FrontBody : MonoBehaviour
             offset = _offset;
         }
     }
+
+    struct LimbBodyInfo
+    {
+        public float cycleProgress;
+        private Quaternion initRot;
+        private Vector3 frontPos;
+        private Vector3 prevFrontPos;
+
+        public LimbBodyInfo(float _cycleProgress, Quaternion _initRot, Vector3 _frontPos, Vector3 _prevFrontPos)
+        {
+            cycleProgress = _cycleProgress;
+            initRot = _initRot;
+            frontPos = _frontPos;
+            prevFrontPos = _prevFrontPos;
+        }
+    }
+
     private Vector3 CastRayDown(Vector3 rayOrigin, Vector3 rayOffset, bool firstCall = true)
     {
         Vector3 returnPoint = nullVector3;
@@ -149,12 +165,11 @@ public class FrontBody : MonoBehaviour
         maxDist = arm1.length * 1f;
         print(maxDist);
 
-        frontPos = CastRayDown(transform.position, new Vector3(0, 0, 0));
-        prevFrontPos = frontPos;
-
         prevLimb = leg2;
         curLimb = leg2;
-        initRot = transform.rotation;
+
+        armBodyInfo = new LimbBodyInfo(0, transform.rotation, CastRayDown(transform.position, new Vector3(0, 0, 0)), CastRayDown(transform.position, new Vector3(0, 0, 0)));
+        legBodyInfo = new LimbBodyInfo(0, legBody.rotation, CastRayDown(legBody.position, new Vector3(0, 0, 0)), CastRayDown(legBody.position, new Vector3(0, 0, 0)));
     }
 
     // Update is called once per frame
@@ -215,12 +230,12 @@ public class FrontBody : MonoBehaviour
                 {
                     Vector3 rayOffset = (hor*transform.right + vert*transform.forward*5).normalized * 2f;
                     armAimPos = CastRayDown(transform.position, rayOffset + (curLimb.root.position - transform.position) * 0.3f); 
-
-                    cycleProgress = 0; //body position progession percent relative to two paws
-                    initRot = transform.rotation;
-
-                    prevFrontPos = frontPos;
-                    frontPos = CastRayDown(transform.position, rayOffset); 
+                    
+                    //update limb body info
+                    armBodyInfo.cycleProgress = 0; //body position progession percent relative to two paws
+                    armBodyInfo.initRot = transform.rotation;
+                    armBodyInfo.prevFrontPos = frontPos;
+                    armBodyInfo.frontPos = CastRayDown(transform.position, rayOffset); 
 
                     rayTarget.position = armAimPos;
                     
@@ -231,6 +246,11 @@ public class FrontBody : MonoBehaviour
                 {
                     legAimPos = backArm.leaf.position;
                     //armAimPos = prevFrontPos;
+
+                    legBodyInfo.cycleProgress = 0; //body position progession percent relative to two paws
+                    legBodyInfo.initRot = legBody.rotation;
+                    legBodyInfo.prevFrontPos = frontPos;
+                    legBodyInfo nthjk.frontPos = CastRayDown(legBody.position, rayOffset); 
 
                     //moving limb
                     MoveArm(legAimPos, curLimb);
@@ -247,10 +267,10 @@ public class FrontBody : MonoBehaviour
             
             Debug.DrawRay(prevFrontPos, frontDir, Color.red);
 
-            transform.rotation = Quaternion.Slerp(initRot, Quaternion.LookRotation(frontDir, Vector3.up), cycleProgress);
+            transform.rotation = Quaternion.Slerp(initRotArm, Quaternion.LookRotation(frontDir, Vector3.up), cycleProgressArm);
 
             Vector3 legHorDir = leg1.root.position - leg2.root.position;
-            legBody.rotation = Quaternion.Slerp(initRot, Quaternion.LookRotation(-Vector3.Cross(Vector3.Cross(frontDir, legHorDir), legHorDir), Vector3.up), cycleProgress);
+            legBody.rotation = Quaternion.Slerp(initRotArm, Quaternion.LookRotation(-Vector3.Cross(Vector3.Cross(frontDir, legHorDir), legHorDir), Vector3.up), cycleProgressLeg);
 
             Debug.DrawRay(legBody.transform.position, legBody.transform.forward, Color.red);
 
@@ -261,19 +281,14 @@ public class FrontBody : MonoBehaviour
                 projectionTarget.position = projectedPos;
                 transform.position = (projectedPos + curLimb.leaf.position) / 2 + transform.up * maxDist*0.9f;
                 */
-                transform.position = Vector3.Lerp(curLimb.alt.leaf.position, armAimPos, cycleProgress) + transform.up * height;
-                
-                legBody.position = Vector3.Lerp(backLeg.leaf.position, backLeg.alt.leaf.position, ) + legBody.transform.up * height;
+                transform.position = Vector3.Lerp(curLimb.alt.leaf.position, armAimPos, cycleProgressArm) + transform.up * height;
+                legBody.position = Vector3.Lerp(backLeg.leaf.position, backLeg.alt.leaf.position, cycleProgressLeg) + legBody.transform.up * height;
             }
             else
             {
                 //transform.position = (arm1.leaf.position + arm2.leaf.position) / 2 + transform.up * maxDist*0.9f;
-                transform.position = Vector3.Lerp(backArm.leaf.position, backArm.alt.leaf.position, cycleProgress) + transform.up * height;
-
-                Vector3 projectedPos = Vector3.ProjectOnPlane(curLimb.leaf.position, transform.up) + Vector3.Dot(curLimb.alt.leaf.position, transform.up) * transform.up;
-                projectionTarget.position = projectedPos;
-                transform.position = (projectedPos + curLimb.leaf.position) / 2 + transform.up * maxDist*0.9f;
-                legBody.position = Vector3.Lerp(curLimb.alt.leaf.position, legAimPos, (cycleProgress > 0.5f ? cycleProgress - 0.5f : cycleProgress)) + legBody.transform.up * height;
+                transform.position = Vector3.Lerp(backArm.leaf.position, backArm.alt.leaf.position, cycleProgressArm) + transform.up * height;
+                legBody.position = Vector3.Lerp(curLimb.alt.leaf.position, legAimPos, cycleProgressLeg) + legBody.transform.up * height;
             }
             
         }

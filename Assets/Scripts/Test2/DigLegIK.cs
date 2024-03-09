@@ -73,8 +73,6 @@ public class DigLegIK : InverseKinematics
         Vector3 axis = Vector3.Cross(offset, pole.position - zero);
         Quaternion rotation = Quaternion.AngleAxis(-firstAng, axis);
 
-        print(firstAng);
-
         bones[1].position = zero + (rotation * offset);
 
         var lastBone = bones[bones.Length - 1];
