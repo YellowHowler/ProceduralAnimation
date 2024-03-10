@@ -9,8 +9,6 @@ public class InverseKinematics : MonoBehaviour
     protected LineRenderer lr;
 
     //values
-    protected Limb limb;
-    protected LimbType type;
     //----------------------------------------------------------------
 
     //Transform references
@@ -36,8 +34,6 @@ public class InverseKinematics : MonoBehaviour
 
     protected void Awake()
     {
-        limb = GetComponent<Limb>();
-
         lr = GetComponent<LineRenderer>();
         lr.SetWidth(0.1f, 0.1f);
 
@@ -64,7 +60,6 @@ public class InverseKinematics : MonoBehaviour
 
     protected void Start()
     {
-        type = limb.type;
     }
 
     protected void LateUpdate()
