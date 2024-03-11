@@ -21,6 +21,7 @@ public class FrontBody : MonoBehaviour
     //temp Transform references
     public Transform rayTarget;
     public Transform projectionTarget;
+    public Transform testObj;
     //----------------------------------------------------------------
 
 
@@ -29,11 +30,15 @@ public class FrontBody : MonoBehaviour
     private float bodyDist;
     private float height = 0.55f;
     private float moveSpeed = 0.75f;
-    private float rotSpeed = 70f;
+    private float rotSpeed = 90f;
     //----------------------------------------------------------------
 
 
     //states
+    private CatState curState;
+    
+    private float idleTime = 0;
+
     public bool isMoving{get;set;}
     private Limb curLimb{get;set;}
     private Limb prevLimb{get;set;}
@@ -44,7 +49,7 @@ public class FrontBody : MonoBehaviour
 
 
     //constants
-    private Vector3 nullVector3 = new Vector3(0, 10000, 0);
+    private Vector3 nullVect = new Vector3(0, 10000, 0);
     //----------------------------------------------------------------
 
     //raycast parameters
@@ -87,9 +92,9 @@ public class FrontBody : MonoBehaviour
 
     private Vector3 CastRayDown(Vector3 rayOrigin, Vector3 rayOffset, bool firstCall = true)
     {
-        Vector3 returnPoint = nullVector3;
+        Vector3 returnPoint = nullVect;
 
-        if(rayOffset.magnitude < 0.1f && !firstCall) return nullVector3;
+        if(rayOffset.magnitude < 0.1f && !firstCall) return nullVect;
         if(Physics.Raycast(origin: rayOrigin,
                                 direction: -transform.up + rayOffset,
                                 hitInfo: out hit,
@@ -184,14 +189,14 @@ public class FrontBody : MonoBehaviour
 
     private void MatchLimbPos(LimbType type)
     {
-        float armForwardDist = RemoveVectorComponent((arm1.leaf.position - arm2.leaf.position), transform.right).magnitude;
-        float legForwardDist = RemoveVectorComponent((leg1.leaf.position - leg2.leaf.position), legBody.right).magnitude;
+        float armForwardDist = RemoveVectorComponent(RemoveVectorComponent((arm1.leaf.position - arm2.leaf.position), transform.right), transform.up).magnitude;
+        float legForwardDist = RemoveVectorComponent(RemoveVectorComponent((leg1.leaf.position - leg2.leaf.position), legBody.right), transform.up).magnitude;
 
-        if(type == LimbType.Arm && armForwardDist >= 0.15f)
+        if(type == LimbType.Arm && armForwardDist >= 0.4f)
         {
             Limb backArm = GetBackLimb(LimbType.Arm);
 
-            Vector3 rayDir = (backArm.alt.leaf.position + transform.forward * 0.1f) - transform.position;
+            Vector3 rayDir = (backArm.alt.leaf.position + transform.forward * 0.2f) - transform.position;
             Vector3 rayDirVert = RemoveVectorComponent(rayDir, transform.right);
             
             Physics.Raycast(origin: transform.position,
@@ -205,12 +210,12 @@ public class FrontBody : MonoBehaviour
 
             MoveArm(armAimPos, curLimb, rayDirVert);
         }  
-        else if(type == LimbType.Leg && legForwardDist >= 0.15f)
+        else if(type == LimbType.Leg && legForwardDist >= 0.4f)
         {
             Limb backLeg = GetBackLimb(LimbType.Leg);
 
-            Vector3 rayDir = (backLeg.alt.leaf.position + legBody.forward * 0.1f) - legBody.position;
-            Vector3 rayDirVert = rayDirVert = RemoveVectorComponent(rayDir, legBody.right);
+            Vector3 rayDir = (backLeg.alt.leaf.position + legBody.forward * 0.2f) - legBody.position;
+            Vector3 rayDirVert = RemoveVectorComponent(rayDir, legBody.right);
             
             Physics.Raycast(origin: legBody.position,
                                 direction: (rayDirVert - rayDir) + rayDirVert,
@@ -223,6 +228,8 @@ public class FrontBody : MonoBehaviour
 
             MoveArm(legAimPos, curLimb, rayDirVert);
         }
+
+        curState = CatState.Still;
     }
 
     private void MoveArm(Vector3 target, Limb limb, Vector3 rayDir)
@@ -283,61 +290,119 @@ public class FrontBody : MonoBehaviour
 
         if(isMoving == false) //when limb still
         {
-            if(vert != 0) //when moving
+            if(vert != 0 && curState != CatState.Adjust) //when moving
             {
-                //getting the next limb to move
-                prevLimb = curLimb;
+                idleTime = 0;
 
-                switch(prevLimb.type)
+                if(Input.GetKeyDown(KeyCode.LeftShift) == false) //when walking
                 {
-                    case LimbType.Arm:
-                        curLimb = backLeg;
-                        break;
-                    case LimbType.Leg:
-                        curLimb = backArm;
-                        break;
-                    default:
-                        if(Vector3.Distance(backArm.leaf.position, backLeg.leaf.position) <= 0.7f)
-                        {
-                            curLimb = backArm;
-                        }
-                        else
-                        {
+                    curState = CatState.Walk;
+
+                    //getting the next limb to move
+                    prevLimb = curLimb;
+
+                    switch(prevLimb.type)
+                    {
+                        case LimbType.Arm:
                             curLimb = backLeg;
-                        }
-                        break;
+                            break;
+                        case LimbType.Leg:
+                            curLimb = backArm;
+                            break;
+                        default:
+                            if(Vector3.Distance(backArm.leaf.position, backLeg.leaf.position) <= 0.7f)
+                            {
+                                curLimb = backArm;
+                            }
+                            else
+                            {
+                                curLimb = backLeg;
+                            }
+                            break;
+                    }
+
+                    //getting the target position
+                    if(curLimb.type == LimbType.Arm) //if arm get new position forward
+                    {
+                        Vector3 rayOffset = (hor*3*transform.right + vert*transform.forward*5).normalized * 2f;
+                        armAimPos = CastRayDown(transform.position, rayOffset + (curLimb.root.position - transform.position) * 0.3f); 
+
+                        rayTarget.position = armAimPos;
+                        
+                        //moving limb
+                        MoveArm(armAimPos, curLimb, RemoveVectorComponent((armAimPos - transform.position), transform.right));
+                    }
+                    else //if leg aim for position right begind arm
+                    {
+                        legAimPos = backArm.leaf.position;
+
+                        //moving limb
+                        MoveArm(legAimPos, curLimb, RemoveVectorComponent((legAimPos - legBody.position), legBody.right));
+                    }
                 }
-
-                //getting the target position
-                if(curLimb.type == LimbType.Arm) //if arm get new position forward
+                else
                 {
-                    Vector3 rayOffset = (hor*3*transform.right + vert*transform.forward*5).normalized * 2f;
-                    armAimPos = CastRayDown(transform.position, rayOffset + (curLimb.root.position - transform.position) * 0.3f); 
-
-                    rayTarget.position = armAimPos;
-                    
-                    //moving limb
-                    MoveArm(armAimPos, curLimb, RemoveVectorComponent((armAimPos - transform.position), transform.right));
-                }
-                else //if leg aim for position right begind arm
-                {
-                    legAimPos = backArm.leaf.position;
-
-                    //moving limb
-                    MoveArm(legAimPos, curLimb, RemoveVectorComponent((legAimPos - transform.position), transform.right));
+                    curState = CatState.Run;
                 }
             }
             else //not moving
             {
-                if(curLimb.type == LimbType.Arm)
+                curState = CatState.Still;
+
+                idleTime += Time.deltaTime;
+
+                if(idleTime >= 3f)
                 {
-                    MatchLimbPos(LimbType.Leg);
-                    MatchLimbPos(LimbType.Arm);
-                }
-                else
-                {
-                    MatchLimbPos(LimbType.Arm);
-                    MatchLimbPos(LimbType.Leg);
+                    curState = CatState.Adjust;
+
+                    if(curLimb.type == LimbType.Arm)
+                    {
+                        if(Vector3.Distance(armAimPos, backLeg.alt.leaf.position) <= bodyDist)
+                        {
+                            MatchLimbPos(LimbType.Leg);
+                            MatchLimbPos(LimbType.Arm);
+                        }
+                        else
+                        {
+                            prevLimb = curLimb;
+                            curLimb = backLeg;
+
+                            Vector3 aimPos = CastRay(legBody.position, (backArm.alt.leaf.position - transform.forward*0.98f*bodyDist) - legBody.position);
+                            if(IsInFront(aimPos, legAimPos, legBody.forward))
+                            {
+                                legAimPos = aimPos;
+                                MoveArm(legAimPos, curLimb, RemoveVectorComponent((legAimPos - legBody.position), legBody.right));
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if(Vector3.Distance(legAimPos, backArm.alt.leaf.position) >= bodyDist * 0.7f)
+                        {
+                            MatchLimbPos(LimbType.Arm);
+                            MatchLimbPos(LimbType.Leg);
+                        }
+                        else
+                        {
+                            prevLimb = curLimb;
+                            curLimb = backArm;
+
+                            /*
+                            Vector3 projectedTransPos = Vector3.ProjectOnPlane(transform.position, Vector3.Cross(arm1.leaf.position - arm2.leaf.position, armBodyInfo.frontPos - armBodyInfo.prevFrontPos));
+                            float theta = Vector3.Angle(transform.forward, backLeg.alt.leaf.position - projectedTransPos);
+                            float a = Vector3.Distance(backLeg.alt.leaf.position, projectedTransPos);
+                            float b = bodyDist * 0.98f;
+                            float c = a * Mathf.Cos(theta * Mathf.Deg2Rad) + Mathf.Sqrt(a*a*Mathf.Cos(theta * Mathf.Deg2Rad)*Mathf.Cos(theta * Mathf.Deg2Rad) + 4*b*b);
+                            */
+
+                            Vector3 aimPos = CastRay(transform.position, armAimPos + (bodyDist - Vector3.Distance(legAimPos, backArm.alt.leaf.position)) * transform.forward + (curLimb.root.position - transform.position) * 0.3f - transform.position);
+                            if(IsInFront(aimPos, armAimPos, transform.forward))
+                            {
+                                armAimPos = aimPos;
+                                MoveArm(armAimPos, curLimb, RemoveVectorComponent((armAimPos - transform.position), transform.right));
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -347,7 +412,7 @@ public class FrontBody : MonoBehaviour
             Vector3 frontDirLeg = legBodyInfo.frontPos - legBodyInfo.prevFrontPos;
             //print(prevFrontPos + " " + frontPos);
             
-            Debug.DrawRay(armBodyInfo.prevFrontPos, frontDirArm, Color.red);
+            Debug.DrawRay(armBodyInfo.prevFrontPos, frontDirArm, Color.blue);
 
             RotateBody(transform, Quaternion.Slerp(armBodyInfo.initRot, Quaternion.LookRotation(frontDirArm, Vector3.up), armBodyInfo.cycleProgress));
         

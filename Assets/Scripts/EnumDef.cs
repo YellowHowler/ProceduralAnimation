@@ -13,4 +13,12 @@ namespace EnumDef
         Arm = 1,
         Leg = 2,
     }
+
+    public enum CatState
+    {
+        Still = 0,
+        Walk = 1,
+        Run = 2,
+        Adjust = 3,
+    }
 }

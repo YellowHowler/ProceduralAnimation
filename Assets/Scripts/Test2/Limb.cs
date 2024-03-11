@@ -24,6 +24,7 @@ public class Limb : MonoBehaviour
         //protected Transform[] modelBones;
 
     public Limb alt; //other arm or leg
+    public Limb opp; //limb right in front/back
     //----------------------------------------------------------------
 
 
