@@ -277,6 +277,9 @@ public class FrontBody : MonoBehaviour
 
         armBodyInfo = new LimbBodyInfo(0, transform.rotation, CastRayDown(transform.position, new Vector3(0, 0, 0)), CastRayDown(transform.position, new Vector3(0, 0, 0)));
         legBodyInfo = new LimbBodyInfo(0, legBody.rotation, CastRayDown(legBody.position, new Vector3(0, 0, 0)), CastRayDown(legBody.position, new Vector3(0, 0, 0)));
+
+        armAimPos = arm1.leaf.position;
+        legAimPos = leg1.leaf.position;
     }
 
     // Update is called once per frame
@@ -324,7 +327,7 @@ public class FrontBody : MonoBehaviour
                     //getting the target position
                     if(curLimb.type == LimbType.Arm) //if arm get new position forward
                     {
-                        Vector3 rayOffset = (hor*3*transform.right + vert*transform.forward*5).normalized * 2f;
+                        Vector3 rayOffset = (hor*1.5f*transform.right + vert*transform.forward*5).normalized * 2f;
                         armAimPos = CastRayDown(transform.position, rayOffset + (curLimb.root.position - transform.position) * 0.3f); 
 
                         rayTarget.position = armAimPos;
@@ -347,9 +350,44 @@ public class FrontBody : MonoBehaviour
             }
             else //not moving
             {
+                /*
                 curState = CatState.Still;
 
                 idleTime += Time.deltaTime;
+
+                if(curLimb.type == LimbType.Arm && Vector3.Distance(armAimPos, backLeg.alt.leaf.position) > bodyDist * 1.1f)
+                {
+                    prevLimb = curLimb;
+                    curLimb = backLeg;
+
+                    Vector3 aimPos = CastRay(legBody.position, (backArm.alt.leaf.position - transform.forward*0.98f*bodyDist) - legBody.position);
+                    if(IsInFront(aimPos, legAimPos, legBody.forward))
+                    {
+                        legAimPos = aimPos;
+                        MoveArm(legAimPos, curLimb, RemoveVectorComponent((legAimPos - legBody.position), legBody.right));
+                    }
+                }
+                else if (curLimb.type == LimbType.Leg && Vector3.Distance(legAimPos, backArm.alt.leaf.position) >= bodyDist * 0.7f)
+                {
+                    prevLimb = curLimb;
+                    curLimb = backArm;
+
+                    /*
+                    Vector3 projectedTransPos = Vector3.ProjectOnPlane(transform.position, Vector3.Cross(arm1.leaf.position - arm2.leaf.position, armBodyInfo.frontPos - armBodyInfo.prevFrontPos));
+                    float theta = Vector3.Angle(transform.forward, backLeg.alt.leaf.position - projectedTransPos);
+                    float a = Vector3.Distance(backLeg.alt.leaf.position, projectedTransPos);
+                    float b = bodyDist * 0.98f;
+                    float c = a * Mathf.Cos(theta * Mathf.Deg2Rad) + Mathf.Sqrt(a*a*Mathf.Cos(theta * Mathf.Deg2Rad)*Mathf.Cos(theta * Mathf.Deg2Rad) + 4*b*b);
+                    ----
+
+                    Vector3 aimPos = CastRay(transform.position, armAimPos + (bodyDist - Vector3.Distance(legAimPos, backArm.alt.leaf.position)) * transform.forward + (curLimb.root.position - transform.position) * 0.3f - transform.position);
+                    if(IsInFront(aimPos, armAimPos, transform.forward))
+                    {
+                        armAimPos = aimPos;
+                        MoveArm(armAimPos, curLimb, RemoveVectorComponent((armAimPos - transform.position), transform.right));
+                    }
+                    
+                }
 
                 if(idleTime >= 3f)
                 {
@@ -357,53 +395,16 @@ public class FrontBody : MonoBehaviour
 
                     if(curLimb.type == LimbType.Arm)
                     {
-                        if(Vector3.Distance(armAimPos, backLeg.alt.leaf.position) <= bodyDist)
-                        {
-                            MatchLimbPos(LimbType.Leg);
-                            MatchLimbPos(LimbType.Arm);
-                        }
-                        else
-                        {
-                            prevLimb = curLimb;
-                            curLimb = backLeg;
-
-                            Vector3 aimPos = CastRay(legBody.position, (backArm.alt.leaf.position - transform.forward*0.98f*bodyDist) - legBody.position);
-                            if(IsInFront(aimPos, legAimPos, legBody.forward))
-                            {
-                                legAimPos = aimPos;
-                                MoveArm(legAimPos, curLimb, RemoveVectorComponent((legAimPos - legBody.position), legBody.right));
-                            }
-                        }
+                        MatchLimbPos(LimbType.Leg);
+                        MatchLimbPos(LimbType.Arm);
                     }
                     else
                     {
-                        if(Vector3.Distance(legAimPos, backArm.alt.leaf.position) >= bodyDist * 0.7f)
-                        {
-                            MatchLimbPos(LimbType.Arm);
-                            MatchLimbPos(LimbType.Leg);
-                        }
-                        else
-                        {
-                            prevLimb = curLimb;
-                            curLimb = backArm;
-
-                            /*
-                            Vector3 projectedTransPos = Vector3.ProjectOnPlane(transform.position, Vector3.Cross(arm1.leaf.position - arm2.leaf.position, armBodyInfo.frontPos - armBodyInfo.prevFrontPos));
-                            float theta = Vector3.Angle(transform.forward, backLeg.alt.leaf.position - projectedTransPos);
-                            float a = Vector3.Distance(backLeg.alt.leaf.position, projectedTransPos);
-                            float b = bodyDist * 0.98f;
-                            float c = a * Mathf.Cos(theta * Mathf.Deg2Rad) + Mathf.Sqrt(a*a*Mathf.Cos(theta * Mathf.Deg2Rad)*Mathf.Cos(theta * Mathf.Deg2Rad) + 4*b*b);
-                            */
-
-                            Vector3 aimPos = CastRay(transform.position, armAimPos + (bodyDist - Vector3.Distance(legAimPos, backArm.alt.leaf.position)) * transform.forward + (curLimb.root.position - transform.position) * 0.3f - transform.position);
-                            if(IsInFront(aimPos, armAimPos, transform.forward))
-                            {
-                                armAimPos = aimPos;
-                                MoveArm(armAimPos, curLimb, RemoveVectorComponent((armAimPos - transform.position), transform.right));
-                            }
-                        }
+                        MatchLimbPos(LimbType.Arm);
+                        MatchLimbPos(LimbType.Leg);
                     }
                 }
+                */
             }
         }
         else //when moving limb
@@ -412,13 +413,20 @@ public class FrontBody : MonoBehaviour
             Vector3 frontDirLeg = legBodyInfo.frontPos - legBodyInfo.prevFrontPos;
             //print(prevFrontPos + " " + frontPos);
             
-            Debug.DrawRay(armBodyInfo.prevFrontPos, frontDirArm, Color.blue);
+            //Debug.DrawRay(armBodyInfo.prevFrontPos, frontDirArm, Color.blue);
 
-            RotateBody(transform, Quaternion.Slerp(armBodyInfo.initRot, Quaternion.LookRotation(frontDirArm, Vector3.up), armBodyInfo.cycleProgress));
-        
-            Vector3 legHorDir = leg1.root.position - leg2.root.position;
-            RotateBody(legBody, Quaternion.Slerp(armBodyInfo.initRot, Quaternion.LookRotation(-Vector3.Cross(Vector3.Cross(frontDirLeg, legHorDir), legHorDir), Vector3.up), legBodyInfo.cycleProgress));
+            if(frontDirArm.magnitude > 0f)
+            {
+                RotateBody(transform, Quaternion.Slerp(armBodyInfo.initRot, Quaternion.LookRotation(frontDirArm, Vector3.up), armBodyInfo.cycleProgress));
+            }
 
+            if(frontDirLeg.magnitude > 0f)
+            {
+                Vector3 legHorDir = leg1.root.position - leg2.root.position;
+                //RotateBody(legBody, Quaternion.Slerp(armBodyInfo.initRot, Quaternion.LookRotation(-Vector3.Cross(Vector3.Cross(frontDirLeg, legHorDir), legHorDir), Vector3.up), legBodyInfo.cycleProgress));
+                RotateBody(legBody, Quaternion.Slerp(Quaternion.Slerp(legBodyInfo.initRot, Quaternion.LookRotation(frontDirLeg, Vector3.up), legBodyInfo.cycleProgress), Quaternion.LookRotation(transform.position - legBody.position, Vector3.up), 0.4f));
+            }
+            
             Debug.DrawRay(legBody.transform.position, legBody.transform.forward, Color.red);
 
             if(curLimb.type == LimbType.Arm)
@@ -429,6 +437,14 @@ public class FrontBody : MonoBehaviour
                 transform.position = (projectedPos + curLimb.leaf.position) / 2 + transform.up * maxDist*0.9f;
                 */
 
+                /*
+                Vector3 frontDirArm = RemoveVectorComponent(armAimPos - curLimb.alt.leaf.position, transform.right);
+                RotateBody(transform, Quaternion.Slerp(armBodyInfo.initRot, Quaternion.LookRotation(frontDirArm, Vector3.up), armBodyInfo.cycleProgress));
+
+                Vector3 frontDirLeg = RemoveVectorComponent(backLeg.alt.leaf.position - backLeg.leaf.position, legBody.right);
+                RotateBody(legBody, Quaternion.Slerp(Quaternion.Slerp(legBodyInfo.initRot, Quaternion.LookRotation(frontDirLeg, Vector3.up), legBodyInfo.cycleProgress), Quaternion.LookRotation(transform.position - legBody.position, Vector3.up), 0.4f));
+                */
+
                 MoveBody(transform, Vector3.Lerp(curLimb.alt.leaf.position, armAimPos, armBodyInfo.cycleProgress) + transform.up * height);
                 
                 Vector3 legBodyPos = Vector3.Lerp(backLeg.leaf.position, backLeg.alt.leaf.position, legBodyInfo.cycleProgress) + legBody.transform.up * height;
@@ -437,6 +453,14 @@ public class FrontBody : MonoBehaviour
             }
             else
             {
+                /*
+                Vector3 frontDirArm = RemoveVectorComponent(backArm.alt.leaf.position - backArm.leaf.position, transform.right);
+                RotateBody(transform, Quaternion.Slerp(armBodyInfo.initRot, Quaternion.LookRotation(frontDirArm, Vector3.up), armBodyInfo.cycleProgress));
+
+                Vector3 frontDirLeg = RemoveVectorComponent(legAimPos - curLimb.alt.leaf.position, legBody.right);
+                RotateBody(legBody, Quaternion.Slerp(Quaternion.Slerp(legBodyInfo.initRot, Quaternion.LookRotation(frontDirLeg, Vector3.up), legBodyInfo.cycleProgress), Quaternion.LookRotation(transform.position - legBody.position, Vector3.up), 0.4f));
+                */
+                
                 //transform.position = (arm1.leaf.position + arm2.leaf.position) / 2 + transform.up * maxDist*0.9f;
                 MoveBody(transform, Vector3.Lerp(backArm.leaf.position, backArm.alt.leaf.position, armBodyInfo.cycleProgress) + transform.up * height);
 
