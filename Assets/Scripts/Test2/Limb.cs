@@ -12,7 +12,7 @@ public class Limb : MonoBehaviour
 
 
     //Transform and Limb references
-    private Transform target;
+    [HideInInspector] public Transform target;
 
     public Transform root;
     public Transform leaf;

@@ -192,7 +192,7 @@ public class FrontBody : MonoBehaviour
         float armForwardDist = RemoveVectorComponent(RemoveVectorComponent((arm1.leaf.position - arm2.leaf.position), transform.right), transform.up).magnitude;
         float legForwardDist = RemoveVectorComponent(RemoveVectorComponent((leg1.leaf.position - leg2.leaf.position), legBody.right), transform.up).magnitude;
 
-        if(type == LimbType.Arm && armForwardDist >= 0.4f)
+        if(type == LimbType.Arm && armForwardDist >= 0.5f)
         {
             Limb backArm = GetBackLimb(LimbType.Arm);
 
@@ -210,7 +210,7 @@ public class FrontBody : MonoBehaviour
 
             MoveArm(armAimPos, curLimb, rayDirVert);
         }  
-        else if(type == LimbType.Leg && legForwardDist >= 0.4f)
+        else if(type == LimbType.Leg && legForwardDist >= 0.5f)
         {
             Limb backLeg = GetBackLimb(LimbType.Leg);
 
@@ -350,24 +350,25 @@ public class FrontBody : MonoBehaviour
             }
             else //not moving
             {
-                /*
                 curState = CatState.Still;
 
                 idleTime += Time.deltaTime;
 
-                if(curLimb.type == LimbType.Arm && Vector3.Distance(armAimPos, backLeg.alt.leaf.position) > bodyDist * 1.1f)
+                if(curLimb.type == LimbType.Arm && (Vector3.Distance(armAimPos, backLeg.alt.leaf.position) > bodyDist * 1.1f || Vector3.Distance(backLeg.leaf.position, backLeg.target.position) > 0.05f))
                 {
+                    //Vector3 aimPos = CastRay(legBody.position, (curLimb.alt.leaf.position - transform.forward*0.98f*bodyDist) - legBody.position)
                     prevLimb = curLimb;
                     curLimb = backLeg;
 
-                    Vector3 aimPos = CastRay(legBody.position, (backArm.alt.leaf.position - transform.forward*0.98f*bodyDist) - legBody.position);
+                    Vector3 aimPos = CastRay(legBody.position, RemoveVectorComponent((curLimb.alt.leaf.position + transform.forward*0.1f*bodyDist) - legBody.position, legBody.right) + (curLimb.root.position - transform.position) * 0.3f);
+
                     if(IsInFront(aimPos, legAimPos, legBody.forward))
                     {
                         legAimPos = aimPos;
                         MoveArm(legAimPos, curLimb, RemoveVectorComponent((legAimPos - legBody.position), legBody.right));
                     }
                 }
-                else if (curLimb.type == LimbType.Leg && Vector3.Distance(legAimPos, backArm.alt.leaf.position) >= bodyDist * 0.7f)
+                else if (curLimb.type == LimbType.Leg && (Vector3.Distance(backArm.leaf.position, curLimb.leaf.position) < 0.3f))
                 {
                     prevLimb = curLimb;
                     curLimb = backArm;
@@ -378,9 +379,11 @@ public class FrontBody : MonoBehaviour
                     float a = Vector3.Distance(backLeg.alt.leaf.position, projectedTransPos);
                     float b = bodyDist * 0.98f;
                     float c = a * Mathf.Cos(theta * Mathf.Deg2Rad) + Mathf.Sqrt(a*a*Mathf.Cos(theta * Mathf.Deg2Rad)*Mathf.Cos(theta * Mathf.Deg2Rad) + 4*b*b);
-                    ----
+                    ----*/
 
-                    Vector3 aimPos = CastRay(transform.position, armAimPos + (bodyDist - Vector3.Distance(legAimPos, backArm.alt.leaf.position)) * transform.forward + (curLimb.root.position - transform.position) * 0.3f - transform.position);
+                    //Vector3 aimPos = CastRay(transform.position, armAimPos + (bodyDist - Vector3.Distance(legAimPos, backArm.alt.leaf.position)) * transform.forward + (curLimb.root.position - transform.position) * 0.3f - transform.position);
+                    Vector3 aimPos = CastRay(transform.position, (curLimb.alt.leaf.position + transform.forward*0.1f*bodyDist) - transform.position);
+                    
                     if(IsInFront(aimPos, armAimPos, transform.forward))
                     {
                         armAimPos = aimPos;
@@ -388,6 +391,8 @@ public class FrontBody : MonoBehaviour
                     }
                     
                 }
+
+                /*
 
                 if(idleTime >= 3f)
                 {
