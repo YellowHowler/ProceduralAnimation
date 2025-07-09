@@ -82,7 +82,9 @@ public class InverseKinematics : MonoBehaviour
                 }
                 else
                 {
-                    bones[i].rotation = Quaternion.FromToRotation(lastBone.position - bones[i].position, target.position - bones[i].position) * bones[i].rotation;
+                    bones[i].rotation = Quaternion.FromToRotation(
+                        lastBone.position - bones[i].position, target.position - bones[i].position
+                        ) * bones[i].rotation;
             
                     if (pole != null && i + 2 <= bones.Length - 1)
                     {
@@ -91,7 +93,9 @@ public class InverseKinematics : MonoBehaviour
                         var projectedBone = plane.ClosestPointOnPlane(bones[i + 1].position);
                         if ((projectedBone - bones[i].position).sqrMagnitude > 0.01f)
                         {
-                            var angle = Vector3.SignedAngle(projectedBone - bones[i].position, projectedpole - bones[i].position, plane.normal);
+                            var angle = Vector3.SignedAngle(
+                                projectedBone - bones[i].position, projectedpole - bones[i].position, plane.normal
+                                );
                             bones[i].rotation = Quaternion.AngleAxis(angle, plane.normal) * bones[i].rotation;
                         }
                     }
